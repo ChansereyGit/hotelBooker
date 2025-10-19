@@ -15,11 +15,11 @@ public class CreateBookingRequest {
     private String roomId;
     
     @NotNull(message = "Check-in date is required")
-    @Future(message = "Check-in date must be in the future")
+    @FutureOrPresent(message = "Check-in date cannot be in the past")
     private LocalDate checkInDate;
     
     @NotNull(message = "Check-out date is required")
-    @Future(message = "Check-out date must be in the future")
+    @FutureOrPresent(message = "Check-out date cannot be in the past")
     private LocalDate checkOutDate;
     
     @NotNull(message = "Number of guests is required")

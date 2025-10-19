@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 
 import '../core/app_export.dart';
 import '../widgets/custom_error_widget.dart';
+import '../config/stripe_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Stripe
+  Stripe.publishableKey = StripeConfig.publishableKey;
+  Stripe.merchantIdentifier = StripeConfig.merchantDisplayName;
+  await Stripe.instance.applySettings();
 
   bool hasShownError = false;
 

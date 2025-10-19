@@ -11,6 +11,7 @@ import '../../models/room.dart';
 import '../../models/booking.dart';
 import '../../services/booking_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/payment_service.dart';
 import './widgets/booking_summary_card.dart';
 import './widgets/guest_information_section.dart';
 import './widgets/payment_section.dart';
@@ -28,6 +29,7 @@ class _BookingCheckoutState extends State<BookingCheckout> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final BookingService _bookingService = BookingService();
   final AuthService _authService = AuthService();
+  final PaymentService _paymentService = PaymentService();
 
   int _currentStep = 0;
   bool _isLoading = false;
@@ -221,7 +223,33 @@ class _BookingCheckoutState extends State<BookingCheckout> {
         return;
       }
       
-      // Create booking object
+      // Calculate total with taxes
+      final roomRate = _room!.pricePerNight * _nights * _numberOfRooms;
+      final taxesFees = roomRate * 0.15;
+      final totalAmount = roomRate + taxesFees;
+      
+      // Step 1: Process Stripe Payment
+      final paymentResult = await _paymentService.processPayment(
+        amount: totalAmount,
+        currency: 'usd',
+        description: 'Hotel Booking - ${_hotel!.name}',
+      );
+      
+      // Check if payment was cancelled
+      if (paymentResult['cancelled'] == true) {
+        setState(() => _isProcessingPayment = false);
+        _showErrorToast('Payment was cancelled');
+        return;
+      }
+      
+      // Check if payment failed
+      if (!paymentResult['success']) {
+        setState(() => _isProcessingPayment = false);
+        _showPaymentErrorDialog(paymentResult['message'] ?? 'Payment failed');
+        return;
+      }
+      
+      // Step 2: Create booking after successful payment
       final booking = Booking(
         userId: user.id,
         hotelId: _hotel!.id,
@@ -233,7 +261,7 @@ class _BookingCheckoutState extends State<BookingCheckout> {
         numberOfGuests: _guests,
         numberOfRooms: _numberOfRooms,
         numberOfNights: _nights,
-        totalPrice: _totalPrice,
+        totalPrice: totalAmount,
         status: 'CONFIRMED',
         specialRequests: _guestData['specialRequests'] as String?,
         guestName: '${_guestData['firstName']} ${_guestData['lastName']}',
@@ -242,13 +270,16 @@ class _BookingCheckoutState extends State<BookingCheckout> {
       );
       
       // Submit booking to backend
-      final result = await _bookingService.createBooking(booking);
+      final bookingResult = await _bookingService.createBooking(booking);
       
-      if (result['success']) {
-        final createdBooking = result['booking'] as Booking;
+      if (bookingResult['success']) {
+        final createdBooking = bookingResult['booking'] as Booking;
         _showSuccessDialog(createdBooking.id ?? 'N/A');
       } else {
-        _showPaymentErrorDialog(result['message'] ?? 'Booking failed');
+        // Booking failed after payment - this is a critical error
+        _showPaymentErrorDialog(
+          'Payment successful but booking failed. Please contact support with payment ID: ${paymentResult['paymentIntentId']}'
+        );
       }
     } catch (e) {
       _showErrorToast('Payment processing failed: ${e.toString()}');

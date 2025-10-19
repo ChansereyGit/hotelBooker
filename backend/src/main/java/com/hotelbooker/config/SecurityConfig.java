@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/hotels/search", "/hotels/*/rooms", "/hotels/*").permitAll()
+                        .requestMatchers("/webhooks/**").permitAll()  // Allow Stripe webhooks
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
