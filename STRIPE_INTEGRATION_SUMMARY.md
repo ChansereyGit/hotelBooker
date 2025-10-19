@@ -33,13 +33,15 @@ Your hotel booking system now has **real Stripe payment processing** integrated!
 
 **Publishable Key** (in Flutter):
 ```
-pk_test_51SJbplRUcv8iFfZ9dIjkImerB6N4eAw2O2x8xaui6QLbVYQPInw2iNft0UUc3loCbUZ5w8AVgzP2x8rogGrapjmo00ebL9FWbi
+pk_test_YOUR_PUBLISHABLE_KEY_HERE
 ```
 
 **Secret Key** (in Backend):
 ```
-sk_test_51SJbplRUcv8iFfZ9AsZCLV3nwYnvKg8OzVMRCWPwukQMxAv07SeRLkPQB0Pl63SJh5q8fUVplGqRuXMYsj7eyKDy00KjzuK22y
+sk_test_YOUR_SECRET_KEY_HERE
 ```
+
+> ⚠️ **Security Note**: Never commit your actual Stripe keys to Git. Use environment variables or a `.env` file that's in `.gitignore`.
 
 ## 🚀 How to Test
 

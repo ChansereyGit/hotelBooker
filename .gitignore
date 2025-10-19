@@ -1,0 +1,12 @@
+# .gitignore
+
+# --- Local Configuration and Environment Files ---
+# Ignore the file where the actual secret is stored
+application-local.yml
+.env
+
+# --- Build Artifacts and IDE Files ---
+# (Other standard ignores you may need)
+/target/
+*.class
+.idea/
